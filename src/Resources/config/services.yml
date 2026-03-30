@@ -1,0 +1,80 @@
+imports:
+    - { resource: 'maintenance.yml' }
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    InSquare\OpendxpProcessManagerBundle\Installer:
+        public: true
+        arguments:
+            $bundle: "@=service('kernel').getBundle('InSquareOpendxpProcessManagerBundle')"
+
+    # auto-register all commands as services
+    InSquare\OpendxpProcessManagerBundle\Command\:
+        resource: '../../Command'
+
+    InSquare\OpendxpProcessManagerBundle\Service\:
+        resource: '../../Service'
+
+    InSquare\OpendxpProcessManagerBundle\Controller\:
+        resource: '../../Controller'
+        public: true
+        tags: ['controller.service_arguments']
+
+    InSquare\OpendxpProcessManagerBundle\MessageHandler\:
+        resource: '../../MessageHandler'
+
+    InSquare\OpendxpProcessManagerBundle\Service\CommandsValidator:
+        public: true
+        arguments :
+            $strategy: "default"
+            $whiteList : []
+            $blackList : ["process-manager:maintenance"]
+
+    InSquare\OpendxpProcessManagerBundle\SystemEventsListener: ~
+
+    ##Executor classes
+    InSquare\OpendxpProcessManagerBundle\Executor\PimcoreCommand:
+        tags:
+            - { name: "elements.processManager.executorClasses" }
+    InSquare\OpendxpProcessManagerBundle\Executor\ClassMethod:
+        tags:
+            - { name: "elements.processManager.executorClasses" }
+
+    ##Logger classes
+    InSquare\OpendxpProcessManagerBundle\Executor\Logger\File:
+        tags:
+            - { name: "elements.processManager.executorLoggerClasses" }
+    InSquare\OpendxpProcessManagerBundle\Executor\Logger\Console:
+        tags:
+            - { name: "elements.processManager.executorLoggerClasses" }
+    InSquare\OpendxpProcessManagerBundle\Executor\Logger\Application:
+        tags:
+            - { name: "elements.processManager.executorLoggerClasses" }
+    InSquare\OpendxpProcessManagerBundle\Executor\Logger\EmailSummary:
+        tags:
+            - { name: "elements.processManager.executorLoggerClasses" }
+
+    ##Action classes
+    InSquare\OpendxpProcessManagerBundle\Executor\Action\Download:
+        tags:
+            - { name: "elements.processManager.executorActionClasses" }
+    InSquare\OpendxpProcessManagerBundle\Executor\Action\OpenItem:
+        tags:
+            - { name: "elements.processManager.executorActionClasses" }
+    InSquare\OpendxpProcessManagerBundle\Executor\Action\JsEvent:
+        tags:
+            - { name: "elements.processManager.executorActionClasses" }
+
+    ##Callback classes
+    executionNote:
+        class : InSquare\OpendxpProcessManagerBundle\Executor\Callback\General
+        arguments :
+            $name : "executionNote"
+            $extJsClass : "opendxp.plugin.processmanager.executor.callback.executionNote"
+            $jsFile : "/bundles/insquareopendxpprocessmanager/js/executor/callback/executionNote.js"
+        tags:
+            - { name: "elements.processManager.executorCallbackClasses" }

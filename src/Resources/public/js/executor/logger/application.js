@@ -1,0 +1,90 @@
+opendxp.registerNS("opendxp.plugin.processmanager.executor.logger.application");
+opendxp.plugin.processmanager.executor.logger.application = Class.create(opendxp.plugin.processmanager.executor.logger.abstractLogger, {
+    type: 'application',
+
+    getForm: function () {
+        if (!this.button) {
+            this.getButton();
+        }
+        var myId = Ext.id();
+        this.form = new Ext.form.FormPanel({
+            forceLayout: true,
+            id: myId,
+            type: 'formPanel',
+            style: "margin: 10px",
+            items: [
+                this.getLogLevelField(),
+                {
+                    xtype: "hidden",
+                    name: "class",
+                    readOnly: true,
+                    value: '\\InSquare\OpendxpProcessManagerBundle\\Executor\\Logger\\Application'
+                }
+            ],
+            bodyStyle: "padding: 10px 30px 10px 30px; min-height:40px;",
+            tbar: this.getTopBar(this.button.text, myId)
+        });
+        return this.form;
+    },
+
+
+    showLogs: function (monitoringItemId, loggerIndexPositions) {
+        this.stopRefresh();
+        var url = '/admin/insquare-opendxp-process-manager/monitoring-item/log-application-logger?id=' + monitoringItemId + '&loggerIndex=' + loggerIndexPositions;
+        Ext.Ajax.request({
+            url: url,
+            success: function (response, opts) {
+                var result = Ext.decode(response.responseText);
+                if (result.success) {
+                    if (result.success) {
+                        try {
+                            opendxp.globalmanager.get("opendxp_applicationlog_admin").activate();
+                        }
+                        catch (e) {
+                            opendxp.globalmanager.add("opendxp_applicationlog_admin", new opendxp.bundle.applicationlogger.log.admin());
+                        }
+                    }
+
+                    var formateTime = function (date) {
+                        return Ext.Date.format(date, 'g:i A');
+                    };
+                    var applicationLogger = opendxp.globalmanager.get("opendxp_applicationlog_admin");
+                    applicationLogger.clearValues();
+
+                    var fromDate = new Date((result.data.creationDate - 1 ) * 1000);
+                    applicationLogger.fromDate.setValue(fromDate);
+
+                    applicationLogger.fromTime.setValue(fromDate);
+
+                    if (!result.data.pid) {
+                        var tillDate = new Date((result.data.modificationDate + 1 ) * 1000);
+                        applicationLogger.toDate.setValue(tillDate);
+                        applicationLogger.toTime.setValue(formateTime(tillDate));
+                    }
+
+                    applicationLogger.searchpanel.getForm().setValues({
+                        'component': result.data.name,
+                        'priority': result.data.logLevel
+                    });
+
+                    applicationLogger.find();
+
+                    if (applicationLogger.autoRefresh && result.data.pid) {
+                        applicationLogger.autoRefresh.setValue(true);
+                    }
+                } else {
+                    opendxp.helpers.showNotification(t("error"), t("plugin_pm_error_process_manager"), "error", result.message);
+                }
+            }.bind(this)
+        });
+    }
+});
+var processManagerApplicationLogger = new opendxp.plugin.processmanager.executor.logger.application();
+document.addEventListener('processManager.monitoringItemGrid', (e) => {
+    e.preventDefault();
+    let currentTarget = e.detail.sourceEvent.currentTarget;
+    if(e.detail.trigger === 'showApplicationLogs'){
+        let index = currentTarget.getAttribute('data-process-manager-action-index');
+        processManagerApplicationLogger.showLogs(e.detail.monitoringItemData.id,index);
+    }
+});

@@ -1,0 +1,43 @@
+{% set ajaxRequest = app.request.get("ajax") %}
+{% if ajaxRequest == false %}
+<html>
+<head>
+    <title>Logs</title>
+    <meta http-equiv="Page-Enter" content="blendTrans(Duration=1.0)">
+    <meta http-equiv="Page-Exit" content="blendTrans(Duration=1.0)">
+    <script type="text/javascript" src="/bundles/insquareopendxpprocessmanager/js/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="/bundles/insquareopendxpprocessmanager/css/logFileLogger.css">
+</head>
+<body>
+
+<div id="content">
+
+    {% endif %}
+
+    {% if monitoringItem.getPid() == false %}
+        <h1>Process Finished</h1>
+    {% endif %}
+    <pre>{{ data | raw }}</pre>
+
+    {% if ajaxRequest == false %}
+</div>
+
+
+<form method="" class="reload">
+    {% if monitoringItem.getPid() %}
+        <div class="reloadWrapper">
+            <input type="checkbox" value="refresh" name="refresh" id="autorefresh"
+                {% if monitoringItem.getPid() %} checked="checked" {% endif %} /> <label for="autorefresh"> Auto refresh
+                |</label>
+        </div>
+    {% endif %}
+    <div class="loggerData">
+        <b>LogLevel:</b> {{ logLevel }} | <b>Log file:</b> {{ logFile }}
+    </div>
+</form>
+{% if monitoringItem.getPid() %}
+    <script type="text/javascript" src="/bundles/insquareopendxpprocessmanager/js/logFileLogger.js"></script>
+{% endif %}
+</body>
+</html>
+{% endif %}

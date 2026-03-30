@@ -1,0 +1,10 @@
+framework:
+    messenger:
+        transports:
+            in_square_opendxp_process_manager:
+                dsn: 'sync://'
+
+        routing:
+            InSquare\OpendxpProcessManagerBundle\Message\ExecuteCommandMessage: in_square_opendxp_process_manager
+            InSquare\OpendxpProcessManagerBundle\Message\CheckCommandAliveMessage: in_square_opendxp_process_manager
+            InSquare\OpendxpProcessManagerBundle\Message\StopProcessMessage: in_square_opendxp_process_manager

@@ -1,0 +1,3 @@
+doctrine_migrations:
+    migrations_paths:
+        'InSquare\OpendxpProcessManagerBundle\Migrations': '%kernel.project_dir%/bundles/InSquare/OpendxpProcessManagerBundle/src/Migrations'

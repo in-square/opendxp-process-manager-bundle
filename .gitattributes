@@ -1,0 +1,9 @@
+.editorconfig export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+.php-cs-fixer.dist.php export-ignore
+doc/ export-ignore
+phpstan-bootstrap.php export-ignore
+phpstan.neon export-ignore
+
+* -text

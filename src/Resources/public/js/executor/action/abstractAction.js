@@ -1,0 +1,44 @@
+opendxp.registerNS("opendxp.plugin.processmanager.executor.action.abstractAction");
+opendxp.plugin.processmanager.executor.action.abstractAction = Class.create(opendxp.plugin.processmanager.helper.form,{
+    values : {},
+    getTopBar: function (niceName, id) {
+        return [{
+            xtype: "tbtext",
+            text: "<img src='" + this.button.icon + "' alt='' class='process-manager-action-icon-tbar'/> <b>" + niceName + "</b>"
+        },
+        "->",
+        {
+            iconCls: "opendxp_icon_delete",
+            handler: this.removeForm.bind(this, id)
+        }
+        ];
+    },
+
+    setValues : function(values){
+        this.values = values;
+    },
+
+    removeForm: function (id) {
+        Ext.getCmp('plugin_pm_action_panel').remove(Ext.getCmp(id));
+    },
+
+    getFieldValue: function (fieldName) {
+        if(this.values){
+            return this.values[fieldName];
+        }
+    },
+
+    addForm : function(){
+        Ext.getCmp('plugin_pm_action_panel').add(this.getForm());
+        this.form.updateLayout();
+        Ext.getCmp('plugin_pm_action_panel').updateLayout();
+        return this.form;
+    },
+
+    /**
+     * Implement in extended class if needed
+     */
+    executeActionForActiveProcessList : function () {
+
+    }
+});

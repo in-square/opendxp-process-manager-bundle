@@ -1,0 +1,222 @@
+<?php
+
+/**
+ * Created by valantic CX Austria GmbH
+ *
+ */
+
+namespace InSquare\OpendxpProcessManagerBundle\Controller;
+
+use InSquare\OpendxpProcessManagerBundle\Enums;
+use InSquare\OpendxpProcessManagerBundle\Executor\AbstractExecutor;
+use InSquare\OpendxpProcessManagerBundle\Executor\Action\AbstractAction;
+use InSquare\OpendxpProcessManagerBundle\Helper;
+use InSquare\OpendxpProcessManagerBundle\Model\Configuration;
+use InSquare\OpendxpProcessManagerBundle\Service\UploadManger;
+use OpenDxp\Bundle\AdminBundle\Helper\QueryParams;
+use OpenDxp\Controller\Traits\JsonHelperTrait;
+use OpenDxp\Controller\UserAwareController;
+use OpenDxp\Model\User;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
+
+#[Route(path: '/admin/insquare-opendxp-process-manager/config')]
+class ConfigController extends UserAwareController
+{
+    use JsonHelperTrait;
+
+    #[Route(path: '/get-by-id')]
+    public function getById(Request $request): JsonResponse
+    {
+        try {
+            $list = new Configuration\Listing();
+            $list->setUser($this->getCurrentUser())->setCondition('id = ?', [$request->get('id')]);
+            $config = $list->load()[0];
+
+            $values = $config->getObjectVars();
+            if ($tmp = $values['executorSettings']) {
+                $values['executorSettings'] = json_decode((string)$tmp, true, 512, JSON_THROW_ON_ERROR);
+            }
+            $result = [
+                'success' => true,
+                'data' => $values,
+            ];
+        } catch (\Exception $e) {
+            $result = [
+                'success' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+        return $this->jsonResponse($result);
+    }
+
+    #[Route(path: '/list')]
+    public function list(Request $request): JsonResponse
+    {
+        $this->checkPermission(Enums\Permissions::VIEW);
+        $data = [];
+        $list = new Configuration\Listing();
+        $list->setOrder('ASC');
+        $list->setOrderKey('name');
+        $list->setLimit($request->get('limit', 25));
+        $list->setOffset($request->get('start', 0));
+
+        $sortingSettings = QueryParams::extractSortingSettings($request->request->all());
+        if ($sortingSettings['orderKey'] && $sortingSettings['order']) {
+            $list->setOrderKey($sortingSettings['orderKey']);
+            $list->setOrder($sortingSettings['order']);
+        }
+
+        $list->setUser($this->getCurrentUser());
+
+        if ($filterCondition = QueryParams::getFilterCondition($request->get('filter', ''), [])) {
+            $list->setCondition($filterCondition);
+        }
+
+        foreach ($list->load() as $item) {
+            $tmp = $item->getObjectVars();
+
+            $tmp['command'] = $item->getCommand();
+            $executorClassObject = $item->getExecutorClassObject();
+            $tmp['type'] = $executorClassObject->getName();
+            $tmp['extJsSettings'] = $executorClassObject->getExtJsSettings();
+
+            $tmp['active'] = (int)$tmp['active'];
+
+            try {
+                if ($item->getCronJob() !== '' && $item->getCronJob() !== '0') {
+                    $nextRunTs = $item->getNextCronJobExecutionTimestamp();
+                    if ($nextRunTs) {
+                        $tmp['cronJob'] .= ' <br/>(Next run:' . date('Y-m-d H:i:s', $nextRunTs) . ')';
+                    }
+                }
+            } catch (\Exception $e) {
+                $tmp['cronJob'] = $e->getMessage();
+            }
+            $data[] = $tmp;
+        }
+
+        return $this->jsonResponse(['total' => $list->getTotalCount(), 'success' => true, 'data' => $data]);
+    }
+
+    #[Route(path: '/save', methods: ['POST'])]
+    public function save(Request $request): JsonResponse
+    {
+        $this->checkPermission(Enums\Permissions::CONFIGURE);
+
+        $data = json_decode((string)$request->get('data'), true, 512, JSON_THROW_ON_ERROR);
+
+        $values = $data['values'];
+        $executorConfig = $data['executorConfig'];
+
+        $actions = $data['actions'];
+        /**
+         * @var AbstractExecutor $executorClass
+         */
+        $executorClass = new $executorConfig['class']();
+        $executorClass->setValues($data['values']);
+
+        $actions = [];
+
+        foreach ($data['actions'] as $actionData) {
+            /**
+             * @var AbstractAction $obj
+             */
+            $className = $actionData['class'];
+            $obj = new $className();
+            $obj->setValues($actionData);
+            $actions[] = $obj;
+        }
+        $executorClass->setActions($actions);
+        $executorClass->setLoggers($data['loggers']);
+
+        // $executorClass->setValues($values)->setExecutorConfig($executorConfig)->setActions($actions);
+        $request_configuration = $request->request->get('id');
+        $configuration = Configuration::getById($request->get('id'));
+
+        if ($request_configuration == '') { // Does the id exist?
+            $configuration = new Configuration();
+            $configuration->setActive(true);
+        }
+        if ($configuration->getId() != $request_configuration && Configuration::getById($request_configuration) != null) { // Is there an update call on an already used id?
+            throw new \Exception('Cannot create or update command, the chosen id already exists!');
+        }
+
+        foreach ($values as $key => $v) {
+            $setter = 'set' . ucfirst((string)$key);
+            if (method_exists($configuration, $setter)) {
+                $configuration->$setter(trim((string)$v));
+            }
+        }
+        $configuration->setExecutorClass($executorConfig['class']);
+        $configuration->setExecutorSettings($executorClass->getStorageValue());
+
+        try {
+            $executorClass->validateConfiguration($configuration);
+            $configuration->save(['oldId' => $request_configuration]);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(['success' => false, 'message' => $e->getMessage()]);
+        }
+
+        return $this->jsonResponse(['success' => true, 'id' => $configuration->getId()]);
+    }
+
+    #[Route(path: '/delete')]
+    public function delete(Request $request): JsonResponse
+    {
+        $this->checkPermission(Enums\Permissions::CONFIGURE);
+
+        $config = Configuration::getById($request->get('id'));
+        if ($config instanceof Configuration) {
+            $config->delete();
+        }
+
+        return $this->jsonResponse(['success' => true]);
+    }
+
+    #[Route(path: '/activate-disable')]
+    public function activateDisable(Request $request): JsonResponse
+    {
+        try {
+            $config = Configuration::getById($request->get('id'));
+            $config->setActive((int)$request->get('value'))->save();
+
+            return $this->jsonResponse(['success' => true]);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    #[Route(path: '/execute')]
+    public function execute(Request $request, UploadManger $uploadManger): JsonResponse
+    {
+        $this->checkPermission(Enums\Permissions::EXECUTE);
+        $callbackSettings = $request->get('callbackSettings') ? json_decode((string)$request->get('callbackSettings'), true, 512, JSON_THROW_ON_ERROR) : [];
+
+        $result = Helper::executeJob(
+            $request->get('id'),
+            $callbackSettings,
+            $this->getCurrentUser()->getId(),
+            [],
+            null,
+            function ($monitoringItem, $executor) use ($request, $uploadManger): void {
+                $uploadManger->saveUploads($request, $monitoringItem);
+            }
+        );
+
+        return $this->jsonResponse($result);
+    }
+
+    private function getCurrentUser(): User
+    {
+        $user = $this->getOpenDxpUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedHttpException();
+        }
+
+        return $user;
+    }
+
+}
