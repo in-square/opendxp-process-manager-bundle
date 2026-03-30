@@ -23,6 +23,7 @@ Fork maintainer: `https://github.com/in-square`.
 - Composer package renamed to `insquare/opendxp-process-manager-bundle`.
 - Dependency migrated from `pimcore/pimcore` to `open-dxp/opendxp`.
 - OpenDXP compatibility fixes in PHP runtime integration (constants, namespaces, command prefixes).
+- Doctrine migrations use bundle resource notation (`@InSquareOpendxpProcessManagerBundle/Migrations`) for compatibility with both `path` repositories and `vendor` installs.
 
 ## Installation
 
