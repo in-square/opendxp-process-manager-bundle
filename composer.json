@@ -1,5 +1,5 @@
 {
-  "name": "insquare/opendxp-process-manager-bundle",
+  "name": "in-square/opendxp-process-manager-bundle",
   "type": "opendxp-bundle",
   "description": "OpenDXP-compatible Process Manager fork based on the GPL v5.0.28 release.",
   "homepage": "https://github.com/InSquare/OpendxpProcessManagerBundle",
