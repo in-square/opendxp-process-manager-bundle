@@ -32,6 +32,11 @@ composer require insquare/opendxp-process-manager-bundle
 bin/console opendxp:bundle:install InSquareOpendxpProcessManagerBundle
 ```
 
+## Routing
+
+Bundle routes are auto-loaded by OpenDXP from
+`src/Resources/config/opendxp/routing.yaml` (no manual import in host `config/routes.yaml` required).
+
 ## Upstream Origin & Version Transparency
 
 This repository is a fork of `elements/process-manager-bundle` (valantic-at/ProcessManager), derived from `v5.0.28`.

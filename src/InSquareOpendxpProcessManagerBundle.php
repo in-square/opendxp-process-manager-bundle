@@ -133,7 +133,7 @@ class InSquareOpendxpProcessManagerBundle extends AbstractOpenDxpBundle implemen
 
     public function getRoutesPath(): ?string
     {
-        return __DIR__ . '/Resources/config/pimcore/routing.yml';
+        return __DIR__ . '/Resources/config/opendxp/routing.yaml';
     }
 
     /**
