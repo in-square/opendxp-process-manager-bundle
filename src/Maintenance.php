@@ -106,7 +106,7 @@ class Maintenance
                 $mail = new \OpenDxp\Mail();
                 $mail->subject('ProcessManager - failed processes (' . \OpenDxp\Tool::getHostUrl().')');
 
-                $html = $this->renderingEngine->render('@ElementsProcessManager/reportEmail.html.twig', [
+                $html = $this->renderingEngine->render('@InSquareOpendxpProcessManager/reportEmail.html.twig', [
                     'totalItemsCount' => count($reportItems),
                     'reportItems' => array_slice($reportItems, 0, 5),
                 ]);

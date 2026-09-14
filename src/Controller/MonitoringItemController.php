@@ -440,11 +440,11 @@ class MonitoringItemController extends UserAwareController
         $viewData['monitoringItem'] = $monitoringItem;
 
         if ($request->get('ajax')) {
-            return new JsonResponse(['html' => $this->renderView('@ElementsProcessManager/MonitoringItem/logFileLogger.html.twig', $viewData),
+            return new JsonResponse(['html' => $this->renderView('@InSquareOpendxpProcessManager/MonitoringItem/logFileLogger.html.twig', $viewData),
                 'monitoringItem' => $monitoringItem->getObjectVars()]);
         }
 
-        return $this->render('@ElementsProcessManager/MonitoringItem/logFileLogger.html.twig', $viewData);
+        return $this->render('@InSquareOpendxpProcessManager/MonitoringItem/logFileLogger.html.twig', $viewData);
     }
 
     #[Route(path: '/delete')]
