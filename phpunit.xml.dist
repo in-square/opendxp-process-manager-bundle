@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php"
+         cacheDirectory=".phpunit.cache"
+         colors="true"
+         failOnWarning="true">
+    <testsuites>
+        <testsuite name="InSquare OpenDXP Process Manager Bundle">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

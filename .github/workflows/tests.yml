@@ -1,0 +1,54 @@
+name: Tests
+
+on:
+    push:
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    phpunit:
+        name: PHP ${{ matrix.php }} / ${{ matrix.dependencies }} dependencies
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - php: '8.3'
+                      dependencies: lowest
+                    - php: '8.3'
+                      dependencies: highest
+                    - php: '8.4'
+                      dependencies: highest
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+
+            - name: Set up PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php }}
+                  coverage: none
+                  extensions: curl, dom, exif, fileinfo, gd, intl, mbstring, pdo, pdo_mysql, simplexml, zip, zlib
+                  tools: composer:v2
+
+            - name: Validate Composer metadata
+              run: composer validate --strict --no-check-publish
+
+            - name: Install lowest dependencies
+              if: matrix.dependencies == 'lowest'
+              run: composer update --prefer-lowest --prefer-dist --no-interaction --no-progress
+
+            - name: Install highest dependencies
+              if: matrix.dependencies == 'highest'
+              run: composer update --prefer-dist --no-interaction --no-progress
+
+            - name: Run tests
+              run: composer test
+
+            - name: Audit current dependencies
+              if: matrix.dependencies == 'highest'
+              run: composer audit --locked --no-interaction

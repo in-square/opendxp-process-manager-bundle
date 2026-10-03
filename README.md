@@ -37,6 +37,29 @@ bin/console opendxp:bundle:install InSquareOpendxpProcessManagerBundle
 Bundle routes are auto-loaded by OpenDXP from
 `src/Resources/config/opendxp/routing.yaml` (no manual import in host `config/routes.yaml` required).
 
+## Testing
+
+The test suite is self-contained and does not depend on a particular host project layout.
+
+```bash
+composer install
+composer test
+```
+
+The tests verify the Doctrine Migrations configuration, DBAL connection selection with and
+without configured entity managers, and discovery of the bundle migrations. GitHub Actions
+runs the suite on every push and pull request against the supported PHP versions and both
+the lowest and current dependency sets.
+
+When developing the bundle through a Composer `path` repository, also verify it in the host
+OpenDXP application:
+
+```bash
+php bin/console lint:yaml vendor/insquare/opendxp-process-manager-bundle/src/Resources/config/doctrine_migrations.yml
+php bin/console debug:config doctrine_migrations
+php bin/console doctrine:migrations:list
+```
+
 ## Upstream Origin & Version Transparency
 
 This repository is a fork of `elements/process-manager-bundle` (valantic-at/ProcessManager), derived from `v5.0.28`.

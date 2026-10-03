@@ -1,3 +1,5 @@
 doctrine_migrations:
+    connection: default
+    em: null
     migrations_paths:
         'InSquare\OpendxpProcessManagerBundle\Migrations': '@InSquareOpendxpProcessManagerBundle/Migrations'
