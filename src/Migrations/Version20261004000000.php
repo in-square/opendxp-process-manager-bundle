@@ -55,25 +55,28 @@ final class Version20261004000000 extends BundleAwareMigration
                 sprintf('Invalid JSON in %s.%s at ID %s; repair the JSON before retrying.', $table, $column, $invalidId)
             );
 
-            $lastId = 0;
+            $lastId = null;
             do {
                 // Only bounded identifiers are fetched; JSON inspection and updates stay in SQL.
                 $ids = $this->connection->fetchFirstColumn(
-                    "SELECT id FROM $table WHERE id > ? AND LOCATE(?, $column) > 0 ORDER BY id LIMIT " . self::BATCH_SIZE,
-                    [$lastId, 'InSquareOpendxpProcessManagerBundle']
+                    "SELECT id FROM $table WHERE " . ($lastId === null ? '' : 'id > ? AND ')
+                    . "LOCATE(?, $column) > 0 ORDER BY id LIMIT " . self::BATCH_SIZE,
+                    $lastId === null ? ['InSquareOpendxpProcessManagerBundle'] : [$lastId, 'InSquareOpendxpProcessManagerBundle']
                 );
                 if ($ids === []) {
                     break;
                 }
-                $upperId = (int) $ids[array_key_last($ids)];
+                $upperId = (string) $ids[array_key_last($ids)];
+                $range = $lastId === null ? 'id <= ?' : 'id > ? AND id <= ?';
+                $rangeParams = $lastId === null ? [$upperId] : [$lastId, $upperId];
 
                 $document = "CASE WHEN JSON_VALID($column) THEN $column ELSE 'null' END";
                 foreach ($paths as $path) {
                     $length = (int) $this->connection->fetchOne(
                         "SELECT MAX(JSON_LENGTH(JSON_EXTRACT($document, ?))) FROM $table"
-                        . " WHERE id > ? AND id <= ? AND JSON_VALID($column)"
+                        . " WHERE $range AND JSON_VALID($column)"
                         . " AND LOWER(JSON_TYPE(JSON_EXTRACT($document, ?))) = 'array'",
-                        [$path, $lastId, $upperId, $path]
+                        [$path, ...$rangeParams, $path]
                     );
 
                     for ($index = 0; $index < $length; ++$index) {
@@ -90,8 +93,8 @@ final class Version20261004000000 extends BundleAwareMigration
         string $column,
         string $path,
         int $index,
-        int $lowerId,
-        int $upperId
+        ?string $lowerId,
+        string $upperId
     ): void {
         $document = "CASE WHEN JSON_VALID($column) THEN $column ELSE 'null' END";
         $classPath = $path . '[' . $index . '].class';
@@ -111,14 +114,16 @@ final class Version20261004000000 extends BundleAwareMigration
             }
         }
 
-        $params = [...$params, $lowerId, $upperId, $path, $classPath, ...$oldClasses];
+        $range = $lowerId === null ? 'id <= ?' : 'id > ? AND id <= ?';
+        $rangeParams = $lowerId === null ? [$upperId] : [$lowerId, $upperId];
+        $params = [...$params, ...$rangeParams, $path, $classPath, ...$oldClasses];
         $placeholders = implode(', ', array_fill(0, count($oldClasses), '?'));
 
         // Doctrine queues these statements, so --dry-run never performs repair writes.
         $this->addSql(
             "UPDATE $table SET $column = JSON_SET($column, ?, CASE JSON_UNQUOTE(JSON_EXTRACT($document, ?)) "
             . implode(' ', $cases) . ' END)'
-            . " WHERE id > ? AND id <= ? AND JSON_VALID($column)"
+            . " WHERE $range AND JSON_VALID($column)"
             . " AND LOWER(JSON_TYPE(JSON_EXTRACT($document, ?))) = 'array'"
             . " AND JSON_UNQUOTE(JSON_EXTRACT($document, ?)) IN ($placeholders)",
             $params
