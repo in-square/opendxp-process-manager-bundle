@@ -24,7 +24,6 @@ Fork maintainer: `https://github.com/in-square`.
 - Dependency migrated from `pimcore/pimcore` to `open-dxp/opendxp`.
 - OpenDXP compatibility fixes in PHP runtime integration (constants, namespaces, command prefixes).
 - Doctrine migrations use bundle resource notation (`@InSquareOpendxpProcessManagerBundle/Migrations`) for compatibility with both `path` repositories and `vendor` installs.
-- InSquare fix: logger and action forms preserve PHP namespace separators when submitting class names from JavaScript. See [the repair note](doc/fixes/js-class-namespaces.md) for existing configuration handling.
 
 ## Installation
 
