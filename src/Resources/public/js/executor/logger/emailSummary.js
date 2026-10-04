@@ -25,7 +25,7 @@ opendxp.plugin.processmanager.executor.logger.emailSummary = Class.create(opendx
                     xtype: "hidden",
                     name: "class",
                     readOnly: true,
-                    value: '\\InSquare\OpendxpProcessManagerBundle\\Executor\\Logger\\EmailSummary'
+                    value: '\\InSquare\\OpendxpProcessManagerBundle\\Executor\\Logger\\EmailSummary'
                 }
             ],
             bodyStyle: "padding: 10px 30px 10px 30px; min-height:40px;",

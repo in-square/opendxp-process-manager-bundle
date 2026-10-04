@@ -32,7 +32,7 @@ jobs:
               with:
                   php-version: ${{ matrix.php }}
                   coverage: none
-                  extensions: curl, dom, exif, fileinfo, gd, intl, mbstring, pdo, pdo_mysql, simplexml, zip, zlib
+                  extensions: curl, dom, exif, fileinfo, gd, intl, mbstring, pdo, pdo_mysql, pdo_sqlite, simplexml, zip, zlib
                   tools: composer:v2
 
             - name: Validate Composer metadata

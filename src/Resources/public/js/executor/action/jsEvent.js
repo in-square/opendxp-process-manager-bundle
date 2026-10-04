@@ -20,7 +20,7 @@ opendxp.plugin.processmanager.executor.action.jsEvent = new Class.create(opendxp
         items.push(this.getTextField('icon'));
         items.push(this.getTextField('eventName',{mandatory : true}));
         items.push(this.getTextArea('eventData',{tooltip : t('plugin_pm_eventData_tooltip')}));
-        items.push(this.getTextField('class',{hidden: true,value : '\\InSquare\OpendxpProcessManagerBundle\\Executor\\Action\\JsEvent'}));
+        items.push(this.getTextField('class',{hidden: true,value : '\\InSquare\\OpendxpProcessManagerBundle\\Executor\\Action\\JsEvent'}));
         this.form =  new Ext.form.FormPanel({
             forceLayout: true,
             id: myId,

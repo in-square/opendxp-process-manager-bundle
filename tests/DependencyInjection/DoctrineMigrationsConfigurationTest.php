@@ -72,6 +72,7 @@ final class DoctrineMigrationsConfigurationTest extends TestCase
             self::MIGRATIONS_NAMESPACE . '\\Version20230321092750',
             self::MIGRATIONS_NAMESPACE . '\\Version20230425000002',
             self::MIGRATIONS_NAMESPACE . '\\Version20241211095632',
+            self::MIGRATIONS_NAMESPACE . '\\Version20261004000000',
         ], $migrations);
     }
 

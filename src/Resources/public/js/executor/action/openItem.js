@@ -27,7 +27,7 @@ opendxp.plugin.processmanager.executor.action.openItem = new Class.create(opendx
             ]
         }));
         items.push(this.getNumberField('itemId'));
-        items.push(this.getTextField('class',{hidden: true,value : '\\InSquare\OpendxpProcessManagerBundle\\Executor\\Action\\OpenItem'}));
+        items.push(this.getTextField('class',{hidden: true,value : '\\InSquare\\OpendxpProcessManagerBundle\\Executor\\Action\\OpenItem'}));
 
         this.form =  new Ext.form.FormPanel({
             forceLayout: true,
