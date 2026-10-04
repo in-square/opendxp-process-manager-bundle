@@ -25,7 +25,7 @@ final class LoggerClassNamesMigrationTest extends TestCase
         $pdo->sqliteCreateFunction('LOCATE', static fn ($needle, $value) => ($offset = strpos((string) $value, $needle)) === false ? 0 : $offset + 1);
         $pdo->sqliteCreateFunction('JSON_UNQUOTE', static fn ($value) => $value);
         $pdo->sqliteCreateFunction('JSON_LENGTH', static fn ($value) => $value === null ? null : count(json_decode($value, true, 512, JSON_THROW_ON_ERROR)));
-        $this->db->executeStatement('CREATE TABLE bundle_process_manager_configuration (id INTEGER PRIMARY KEY, executorSettings TEXT, modificationDate INTEGER, active INTEGER)');
+        $this->db->executeStatement('CREATE TABLE bundle_process_manager_configuration (id VARCHAR(190) PRIMARY KEY, executorSettings TEXT, modificationDate INTEGER, active INTEGER)');
         $this->db->executeStatement('CREATE TABLE bundle_process_manager_monitoring_item (id INTEGER PRIMARY KEY, loggers TEXT, actions TEXT, modificationDate INTEGER, reportedDate TEXT, status TEXT)');
     }
 
@@ -107,6 +107,28 @@ final class LoggerClassNamesMigrationTest extends TestCase
         self::assertSame([], $this->plan()->getSql());
     }
 
+    public function testRepairsTextAndMixedConfigurationIdentifiers(): void
+    {
+        $ids = ['0', '001', '1', '10', '1-mail', '2', 'newsletter', 'z-report'];
+        for ($index = 0; $index < 501; ++$index) {
+            $ids[] = sprintf('job-%04d', $index);
+        }
+        foreach ($ids as $id) {
+            $this->db->insert('bundle_process_manager_configuration', [
+                'id' => $id,
+                'executorSettings' => json_encode(['loggers' => [['class' => '\InSquareOpendxpProcessManagerBundle\Executor\Logger\EmailSummary']]], JSON_THROW_ON_ERROR),
+                'modificationDate' => 123,
+            ]);
+        }
+        $this->apply($this->plan());
+        self::assertSame(count($ids), (int) $this->db->fetchOne('SELECT COUNT(*) FROM bundle_process_manager_configuration'));
+        self::assertSame(0, (int) $this->db->fetchOne(
+            'SELECT COUNT(*) FROM bundle_process_manager_configuration WHERE LOCATE(?, executorSettings) > 0',
+            ['InSquareOpendxpProcessManagerBundle']
+        ));
+        self::assertSame(count($ids), (int) $this->db->fetchOne('SELECT COUNT(*) FROM bundle_process_manager_configuration WHERE modificationDate = 123'));
+        self::assertSame([], $this->plan()->getSql());
+    }
     public function testValidUnrelatedAndNullValuesAreNotChanged(): void
     {
         $values = [
