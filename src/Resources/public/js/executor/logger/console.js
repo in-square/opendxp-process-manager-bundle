@@ -20,7 +20,7 @@ opendxp.plugin.processmanager.executor.logger.console = Class.create(opendxp.plu
                     xtype: "hidden",
                     name: "class",
                     readOnly: true,
-                    value: '\\InSquare\OpendxpProcessManagerBundle\\Executor\\Logger\\Console'
+                    value: '\\InSquare\\OpendxpProcessManagerBundle\\Executor\\Logger\\Console'
                 }
             ],
             bodyStyle: "padding: 10px 30px 10px 30px; min-height:40px;",

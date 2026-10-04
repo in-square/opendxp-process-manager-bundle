@@ -24,7 +24,7 @@ opendxp.plugin.processmanager.executor.action.download = new Class.create(opendx
             fieldLabel : t('plugin_pm_action_download_delete_with_monitoring_item'),
             inputValue : true
         }));
-        items.push(this.getTextField('class',{hidden: true,value : '\\InSquare\OpendxpProcessManagerBundle\\Executor\\Action\\Download'}));
+        items.push(this.getTextField('class',{hidden: true,value : '\\InSquare\\OpendxpProcessManagerBundle\\Executor\\Action\\Download'}));
         this.form =  new Ext.form.FormPanel({
             forceLayout: true,
             id: myId,

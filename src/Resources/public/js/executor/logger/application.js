@@ -18,7 +18,7 @@ opendxp.plugin.processmanager.executor.logger.application = Class.create(opendxp
                     xtype: "hidden",
                     name: "class",
                     readOnly: true,
-                    value: '\\InSquare\OpendxpProcessManagerBundle\\Executor\\Logger\\Application'
+                    value: '\\InSquare\\OpendxpProcessManagerBundle\\Executor\\Logger\\Application'
                 }
             ],
             bodyStyle: "padding: 10px 30px 10px 30px; min-height:40px;",
