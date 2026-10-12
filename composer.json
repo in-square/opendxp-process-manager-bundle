@@ -5,7 +5,7 @@
   "homepage": "https://github.com/InSquare/OpendxpProcessManagerBundle",
   "license": "GPL-3.0-or-later",
   "require": {
-    "php": "~8.3.0 || ~8.4.0",
+    "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
     "open-dxp/opendxp": "^1.0",
     "dragonmantank/cron-expression": "^3.1"
   },

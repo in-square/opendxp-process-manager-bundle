@@ -161,7 +161,7 @@ class InSquareOpendxpProcessManagerBundle extends AbstractOpenDxpBundle implemen
             $error = error_get_last();
             Helper::executeMonitoringItemLoggerShutdown($monitoringItem);
 
-            if (in_array($error['type'], [E_WARNING, E_DEPRECATED, E_STRICT, E_NOTICE])) {
+            if (in_array($error['type'], [E_WARNING, E_DEPRECATED, E_NOTICE])) {
                 if (($config = Configuration::getById($monitoringItem->getConfigurationId())) instanceof \InSquare\OpendxpProcessManagerBundle\Model\Configuration) {
                     $versions = $config->getKeepVersions();
                     if (is_numeric($versions)) {
